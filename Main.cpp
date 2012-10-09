@@ -38,12 +38,10 @@ static void comandoRemoverMembro(std::istream &stream, std::istream &file,
 	for (int i = 0; i < qtd; i++) {
 
 		file.getline(line, 10000);
-		std::stringstream stream(line);
-		std::string element;
-		stream >> element;
 
-		char *lancamento = new char[element.size()];
-		strcpy(lancamento, element.c_str());
+
+		char *lancamento = new char[strlen(line)];
+		strcpy(lancamento, line);
 		if (lista.contem(lancamento)) {
 			lista.retirarEspecifico(lancamento);
 			break;
@@ -56,7 +54,8 @@ static void comandoRemoverMembro(std::istream &stream, std::istream &file,
 
 static void comandoMostrar(Lista &lista) {
 
-	for (int i = 0; i < lista.retornarUltimo(); i++) {
+	for (int i = 0; i < lista.retornarUltimo()+1; i++) {
+
 
 		std::cout << lista.retornarLancamento(i) << std::endl;
 	}
@@ -73,12 +72,9 @@ static void comandoInserirEmOrdem(std::istream &stream, std::istream &file,
 
 	for (int i = 0; i < qtd; i++) {
 		file.getline(line, 10000);
-		std::stringstream stream(line);
-		std::string element;
-		stream >> element;
 
-		char *lancamento = new char[element.size()];
-		strcpy(lancamento, element.c_str());
+		char *lancamento = new char[strlen(line)];
+		strcpy(lancamento, line);
 
 		lista.adicionarEmOrdem(lancamento);
 
@@ -98,12 +94,9 @@ static void comandoInserirNaPosicao(std::istream &stream, std::istream &file,
 
 	for (int i = 0; i < qtd; i++) {
 		file.getline(line, 10000);
-		std::stringstream stream(line);
-		std::string element;
-		stream >> element;
-		char *lancamento = new char[element.size()];
+		char *lancamento = new char[strlen(line)];
 
-		strcpy(lancamento, element.c_str());
+		strcpy(lancamento, line);
 		lista.adicionarEmOrdem(lancamento);
 
 		lista.adicionaNaPosicao(lancamento, pos);
@@ -122,13 +115,12 @@ static void comandoInserir(std::istream &stream, std::istream &file,
 	for (int i = 0; i < qtd; i++) {
 
 		file.getline(line, 10000);
-		std::stringstream stream(line);
-		std::string element;
-		stream >> element;
 
-		char *lancamento = new char[element.size()];
+		char *lancamento = new char[strlen(line)];
 
-		strcpy(lancamento, element.c_str());
+		strcpy(lancamento, line);
+
+
 
 		lista.adicionar(lancamento);
 

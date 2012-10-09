@@ -7,6 +7,8 @@
 
 #include "Lista.h"
 #include <cstring>
+#include <cstdlib>
+#include <cstdio>
 
 Lista::Lista() {
 
@@ -14,7 +16,7 @@ Lista::Lista() {
 }
 
 Lista::~Lista() {
-	ultimo = -1;
+	delete[] lista;
 }
 
 void Lista::inicializar() {
@@ -36,7 +38,7 @@ bool Lista::listaVazia() {
 }
 
 //Adiciona no final
-int Lista::adicionar(const char* lancamento) {
+int Lista::adicionar(char* lancamento) {
 
 	if (listaCheia()) {
 		return '\0';
@@ -44,12 +46,12 @@ int Lista::adicionar(const char* lancamento) {
 
 	ultimo++;
 
-	strcpy(lista[ultimo], lancamento);
+	lista[ultimo] = lancamento;
 	return ultimo;
 
 }
 
-int Lista::adicionarNoInicio(const char* lancamento) {
+int Lista::adicionarNoInicio(char* lancamento) {
 
 	int pos;
 	if (listaCheia()) {
@@ -65,7 +67,7 @@ int Lista::adicionarNoInicio(const char* lancamento) {
 		pos--;
 	}
 
-	strcpy(lista[0], lancamento);
+	lista[0] = lancamento;
 
 	return ultimo;
 
@@ -90,7 +92,7 @@ int Lista::retirarDoInicio() {
 		return '\0';
 	}
 	ultimo--;
-	strcpy(valor, lista[0]);
+	valor = lista[0];
 	pos = 0;
 
 	while (pos <= ultimo) {
@@ -104,7 +106,7 @@ int Lista::retirarDoInicio() {
 }
 
 //Adiciona na posição do argumento dado.
-int Lista::adicionaNaPosicao(const char* lancamento, int pos_destino) {
+int Lista::adicionaNaPosicao(char* lancamento, int pos_destino) {
 
 	int pos;
 
@@ -123,7 +125,7 @@ int Lista::adicionaNaPosicao(const char* lancamento, int pos_destino) {
 		pos--;
 	}
 
-	strcpy(lista[pos_destino], lancamento);
+	lista[pos_destino] = lancamento;
 
 	return pos_destino;
 
@@ -140,13 +142,11 @@ int Lista::retirarDaPosicao(int pos_fonte) {
 	}
 
 	ultimo--;
-
-	strcpy(valor, lista[pos_fonte]);
+	valor = lista[pos_fonte];
 	pos = pos_fonte;
 
 	while (pos <= ultimo) {
 		lista[pos] = lista[pos + 1];
-
 		pos++;
 	}
 
@@ -164,14 +164,14 @@ bool Lista::contem(const char* lancamento) {
 	return false;
 }
 
-int Lista::adicionarEmOrdem(const char* lancamento) {
+int Lista::adicionarEmOrdem(char* lancamento) {
 	int pos;
 
 	if (listaCheia())
 		return '\0';
 
 	pos = 0;
-	while (pos <= ultimo && lancamento > lista[pos]) {
+	while (pos <= ultimo && *lancamento >= *lista[pos]) {
 		pos++;
 	}
 
@@ -179,7 +179,7 @@ int Lista::adicionarEmOrdem(const char* lancamento) {
 }
 
 //Retorna posição lançamento.
-int Lista::posicao(const char* lancamento) {
+int Lista::posicao(char* lancamento) {
 
 	int pos = 0;
 
@@ -194,9 +194,12 @@ int Lista::posicao(const char* lancamento) {
 }
 
 //Retira dado elemento
-int Lista::retirarEspecifico(const char* lancamento) {
+int Lista::retirarEspecifico(char* lancamento) {
 
 	int pos;
+	if(!contem(lancamento)){
+		return '\0';
+	}
 	if (listaVazia())
 		return '\0';
 
@@ -211,6 +214,8 @@ int Lista::retirarEspecifico(const char* lancamento) {
 int Lista::retornarUltimo() {
 	return ultimo;
 }
-char Lista::retornarLancamento(int pos) {
-	return *lista[pos];
+std::string Lista::retornarLancamento(int pos) {
+
+	std::string x(lista[pos]);
+	return x;
 }

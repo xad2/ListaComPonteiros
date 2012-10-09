@@ -29,17 +29,17 @@ public:
 
 	void inicializar();
 	void destruir();
-	int adicionar(const char* dado);
-	int adicionarNoInicio(const char* dado);
-	int adicionaNaPosicao(const char* dado, int pos_destino);
-	int adicionarEmOrdem(const char* dado);
+	int adicionar(char* dado);
+	int adicionarNoInicio(char* dado);
+	int adicionaNaPosicao(char* dado, int pos_destino);
+	int adicionarEmOrdem(char* dado);
 	int retirar();
 	int retirarDoInicio();
 	int retirarDaPosicao(int pos);
-	int retirarEspecifico(const char* lancamento);
-	int posicao(const char* dado);
+	int retirarEspecifico( char* lancamento);
+	int posicao(char* dado);
 	int retornarUltimo();
-	char retornarLancamento(int pos);
+	std::string retornarLancamento(int pos);
 };
 
 #endif /* LISTA_H_ */
