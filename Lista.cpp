@@ -9,213 +9,180 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <cassert>
 
-Lista::Lista() {
-
-	ultimo = -1;
+Lista::Lista() 
+    : ultimo(-1)
+{
+    for (int i = 0; i < MAXLISTA; ++i)
+        lista[i] = NULL;
 }
 
 Lista::~Lista() {
-	delete[] lista;
+    limpar();
 }
 
-void Lista::inicializar() {
-	ultimo = -1;
+void Lista::limpar() {
+    while (!listaVazia())
+        retirar();
 }
 
-bool Lista::listaCheia() {
-	if (ultimo + 1 == MAXLISTA) {
-		return true;
-	}
-	return false;
+bool Lista::listaCheia() const {
+    return ultimo + 1 == MAXLISTA;
 }
 
-bool Lista::listaVazia() {
-	if (ultimo == -1) {
-		return true;
-	}
-	return false;
+bool Lista::listaVazia() const {
+    return ultimo == -1;
 }
 
 //Adiciona no final
-int Lista::adicionar(char* lancamento) {
-
-	if (listaCheia()) {
-		return '\0';
-	}
-
-	ultimo++;
-
-	lista[ultimo] = lancamento;
-	return ultimo;
-
+int Lista::adicionar(const char* dado) {
+    return adicionaNaPosicao(dado, ultimo + 1);
 }
 
-int Lista::adicionarNoInicio(char* lancamento) {
-
-	int pos;
-	if (listaCheia()) {
-		return '\0';
-
-	}
-
-	ultimo++;
-	pos = ultimo;
-
-	while (pos > 0) {
-		lista[pos] = lista[pos - 1];
-		pos--;
-	}
-
-	lista[0] = lancamento;
-
-	return ultimo;
-
+int Lista::adicionarNoInicio(const char* dado) {
+    return adicionaNaPosicao(dado, 0);
 }
 
 //Retira do último.
 int Lista::retirar() {
-	if (listaVazia()) {
-		return '\0';
-	}
-	ultimo--;
-	return ultimo;
-
+    return retirarDaPosicao(ultimo);
 }
 
 int Lista::retirarDoInicio() {
-
-	int pos;
-	char *valor;
-
-	if (listaVazia()) {
-		return '\0';
-	}
-	ultimo--;
-	valor = lista[0];
-	pos = 0;
-
-	while (pos <= ultimo) {
-		lista[pos] = lista[pos + 1];
-		pos++;
-
-	}
-
-	return *valor;
-
+    return retirarDaPosicao(0);
 }
 
 //Adiciona na posição do argumento dado.
-int Lista::adicionaNaPosicao(char* lancamento, int pos_destino) {
+int Lista::adicionaNaPosicao(const char* lancamento, int pos_destino) {
 
-	int pos;
+    int pos;
 
-	if (listaCheia())
-		return '\0';
-	else if (pos_destino > ultimo + 1 || pos_destino < 0) {
-		return '\0';
-	}
+    if (listaCheia() || pos_destino > ultimo + 1 || pos_destino < 0) {
+        return -1;
+    }
 
-	ultimo++;
-	pos = ultimo;
+    //// find out the size of the string to be inserted
+    //// this is very dangerous as we assume the input string is '\0' terminated
+    //// a malicious user may pass an ill-formed and/or huge string
+    size_t length = strlen(lancamento);
 
-	while (pos > pos_destino) {
-		lista[pos] = lista[pos - 1];
+    //// we could return -1 here
+    assert(length < 10000);
 
-		pos--;
-	}
+    //// Suppose we have this list:
+    //// [A, B, C]
+    ////        ^ ultimo
+    //// And we want to insert D in pos = 1
+    //// so that in the end we would have
+    //// [A, D, B, C]
+    ////           ^ ultimo
 
-	lista[pos_destino] = lancamento;
+    //// [A, D, B, C, NULL]
+    ////                 ^ ultimo
+    ultimo++;
+    pos = ultimo;
 
-	return pos_destino;
+    while (pos > pos_destino) {
+        lista[pos] = lista[pos - 1];
+        pos--;
+    }
+    //// When the while loop exits we have
+    //// [A, B, B, C]
+    ////           ^ ultimo
 
+    //// [A, D, B, C]
+    ////           ^ ultimo
+    lista[pos_destino] = new char[length + 1]; //// allocate memory to the destination buffer
+    strncpy(lista[pos_destino], lancamento, length); //// copy data from src to dst
+    lista[pos_destino][length] = '\0'; //// make sure we '\0' the dst buffer, very important!
+
+    return pos_destino;
 }
+
 //Remove um lançamento de acordo com a posição dada.
 int Lista::retirarDaPosicao(int pos_fonte) {
 
-	int pos;
-	char *valor;
-	if (pos_fonte > ultimo || pos_fonte < 0) {
-		return '\0';
-	} else if (listaVazia()) {
-		return '\0';
-	}
+    if (pos_fonte > ultimo || pos_fonte < 0 || listaVazia()) {
+        return -1;
+    }
 
-	ultimo--;
-	valor = lista[pos_fonte];
-	pos = pos_fonte;
+    // make a copy
+    // we use std:string because it handles memory allocation/deallocation for us automatically
+    std::string removedValue = lista[pos_fonte];
 
-	while (pos <= ultimo) {
-		lista[pos] = lista[pos + 1];
-		pos++;
-	}
+    //// Suppose we have a list like this:
+    //// [A, B, C]
+    ////        ^ ultimo
+    //// And we want to remove the second item
+    //// so that in the end we would have
+    //// [A, C, NULL]
+    ////     ^ ultimo
 
-	return *valor;
+    //// [A, NULL, C]
+    ////           ^ ultimo
+    delete[] lista[pos_fonte]; // we have to delete memory! avoiding leaks
+    lista[pos_fonte] = NULL;
 
+    int pos = pos_fonte;
+    while (pos < ultimo) {
+        lista[pos] = lista[pos + 1];
+        pos++;
+    }
+    //// When the while loop exits we have
+    //// [A, C, C]
+    ////        ^ ultimo
+
+    //// [A, C, NULL]
+    ////           ^ ultimo
+    lista[ultimo] = NULL; //// Note that we moved the pointer, we didnt copy data
+    
+    //// [A, C, NULL]
+    ////           ^ ultimo
+    ultimo--;
+
+    // return removedValue; ?
+    return 1;
 }
 
 //Olha se o lançamento está contido
-bool Lista::contem(const char* lancamento) {
-	for (int i = 0; i <= ultimo; i++) {
-		if (lancamento == lista[i])
-			return true;
-	}
-
-	return false;
+bool Lista::contem(const char* lancamento) const {
+    return posicao(lancamento) > 0;
 }
 
-int Lista::adicionarEmOrdem(char* lancamento) {
-	int pos;
+int Lista::adicionarEmOrdem(const char* lancamento) {
+    if (listaCheia())
+        return -1;
 
-	if (listaCheia())
-		return '\0';
+    int pos = 0;
+    while (pos <= ultimo && strcmp(lancamento, lista[pos]) > 0) {
+        pos++;
+    }
 
-	pos = 0;
-	while (pos <= ultimo && *lancamento >= *lista[pos]) {
-		pos++;
-	}
-
-	return adicionaNaPosicao(lancamento, pos);
+    return adicionaNaPosicao(lancamento, pos);
 }
 
 //Retorna posição lançamento.
-int Lista::posicao(char* lancamento) {
-
-	int pos = 0;
-
-	while (pos <= ultimo && (lancamento != lista[pos])) {
-		pos++;
-	}
-	if (pos > ultimo)
-		return '\0';
-
-	return pos;
-
+int Lista::posicao(const char* lancamento) const {
+    for (int i = 0; i <= ultimo; i++) {
+        if (strcmp(lancamento, lista[i]) == 0)
+            return i;
+    }
+    return -1;
 }
 
 //Retira dado elemento
-int Lista::retirarEspecifico(char* lancamento) {
-
-	int pos;
-	if(!contem(lancamento)){
-		return '\0';
-	}
-	if (listaVazia())
-		return '\0';
-
-	pos = posicao(lancamento);
-	if (pos < 0)
-		return '\0';
-
-	return retirarDaPosicao(pos);
-
+int Lista::retirarEspecifico(const char* lancamento) {
+    int pos = posicao(lancamento);
+    if (pos < 0)
+        return -1;
+    return retirarDaPosicao(pos);
 }
 
-int Lista::retornarUltimo() {
-	return ultimo;
+std::string Lista::retornarUltimo() const {
+    return lista[ultimo];
 }
-std::string Lista::retornarLancamento(int pos) {
 
-	std::string x(lista[pos]);
-	return x;
+std::string Lista::retornarLancamento(int pos) const {
+    return lista[pos];
 }

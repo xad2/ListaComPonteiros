@@ -16,115 +16,102 @@
 #include "Lista.h"
 
 
-
 //método que remove da posição
-static void comandoRemoverDaPosicao(std::istream &stream, std::istream &file,
-		Lista &lista) {
-
-	int pos;
-	stream >> pos;
-
-	lista.retirarDaPosicao(pos);
-
+static void comandoRemoverDaPosicao(std::istream &stream, std::istream &file, Lista &lista) {
+    int pos;
+    stream >> pos;
+    lista.retirarDaPosicao(pos);
 }
 
-static void comandoRemoverMembro(std::istream &stream, std::istream &file,
-		Lista &lista) {
+static void comandoRemoverMembro(std::istream &stream, std::istream &file, Lista &lista) {
+    int qtd;
+    stream >> qtd;
 
-	int qtd;
-	stream >> qtd;
+    char line[10000];
+    for (int i = 0; i < qtd; i++) {
 
-	char line[10000];
-	for (int i = 0; i < qtd; i++) {
+        file.getline(line, 10000);
 
-		file.getline(line, 10000);
+        // No need to copy, we are just reading here
+        //char *lancamento = new char[strlen(line)];
+        //strcpy(lancamento, line);
 
+        if (lista.contem(line)) {
+            lista.retirarEspecifico(line);
+            //break;
+        }
 
-		char *lancamento = new char[strlen(line)];
-		strcpy(lancamento, line);
-		if (lista.contem(lancamento)) {
-			lista.retirarEspecifico(lancamento);
-			break;
-
-		}
-
-	}
+    }
 
 }
 
 static void comandoMostrar(Lista &lista) {
+    for (int i = 0; i < lista.numeroElementos(); i++)
+        std::cout << lista.retornarLancamento(i) << std::endl;
+}
 
-	for (int i = 0; i < lista.retornarUltimo()+1; i++) {
+static void comandoInserirEmOrdem(std::istream &stream, std::istream &file, Lista &lista) {
+    int qtd;
+    stream >> qtd;
 
+    char line[10000];
 
-		std::cout << lista.retornarLancamento(i) << std::endl;
-	}
+    for (int i = 0; i < qtd; i++) {
+        file.getline(line, 10000);
+
+        /// we dont need to create a copy
+        /// Lista does this for us
+        //char *lancamento = new char[strlen(line)];
+        //strcpy(lancamento, line);
+
+        lista.adicionarEmOrdem(line);
+
+    }
 
 }
 
-static void comandoInserirEmOrdem(std::istream &stream, std::istream &file,
-		Lista &lista) {
+static void comandoInserirNaPosicao(std::istream &stream, std::istream &file, Lista &lista) {
 
-	int qtd;
-	stream >> qtd;
+    int qtd;
+    stream >> qtd;
 
-	char line[10000];
+    int pos;
+    stream >> pos;
 
-	for (int i = 0; i < qtd; i++) {
-		file.getline(line, 10000);
+    char line[10000];
 
-		char *lancamento = new char[strlen(line)];
-		strcpy(lancamento, line);
+    for (int i = 0; i < qtd; i++) {
+        file.getline(line, 10000);
 
-		lista.adicionarEmOrdem(lancamento);
+        /// we dont need to create a copy
+        /// Lista does this for us
+        //char *lancamento = new char[strlen(line)];
+        //strcpy(lancamento, line);
 
-	}
+        // Is this necessary?
+        //lista.adicionarEmOrdem(line);
 
-}
-static void comandoInserirNaPosicao(std::istream &stream, std::istream &file,
-		Lista &lista) {
+        lista.adicionaNaPosicao(line, pos);
 
-	int qtd;
-	stream >> qtd;
-
-	int pos;
-	stream >> pos;
-
-	char line[10000];
-
-	for (int i = 0; i < qtd; i++) {
-		file.getline(line, 10000);
-		char *lancamento = new char[strlen(line)];
-
-		strcpy(lancamento, line);
-		lista.adicionarEmOrdem(lancamento);
-
-		lista.adicionaNaPosicao(lancamento, pos);
-
-	}
+    }
 
 }
-static void comandoInserir(std::istream &stream, std::istream &file,
-		Lista &lista) {
+static void comandoInserir(std::istream &stream, std::istream &file, Lista &lista) {
+    int qtd;
+    stream >> qtd;
 
-	int qtd;
-	stream >> qtd;
+    char line[10000];
 
-	char line[10000];
+    for (int i = 0; i < qtd; i++) {
 
-	for (int i = 0; i < qtd; i++) {
+        file.getline(line, 10000);
 
-		file.getline(line, 10000);
+        /// we dont need to create a copy
+        /// Lista does this for us
+        // char *lancamento = new char[strlen(line)];
 
-		char *lancamento = new char[strlen(line)];
-
-		strcpy(lancamento, line);
-
-
-
-		lista.adicionar(lancamento);
-
-	}
+        lista.adicionar(line);
+    }
 
 }
 
@@ -139,44 +126,44 @@ static void execucaoInterativa() {
 //Método que roda o caso de testes.
 static void execucaoDeTestes(const std::string &filename) {
 
-	Lista listaAtual;
+    Lista listaAtual;
 
-	std::ifstream file(filename.c_str());
-	std::string line;
+    std::ifstream file(filename.c_str());
+    std::string line;
 
-	while (std::getline(file, line)) {
-		std::stringstream stream(line);
-		std::string command = line;
-		stream >> command;
+    while (std::getline(file, line)) {
+        std::stringstream stream(line);
+        std::string command = line;
+        stream >> command;
 
-		if (command == "CRIAR") {
-			listaAtual.inicializar();
-		} else if (command == "INSERIR") {
-			comandoInserir(stream, file, listaAtual);
-		} else if (command == "INSERIR_EM_ORDEM") {
-			comandoInserirEmOrdem(stream, file, listaAtual);
-		} else if (command == "INSERIR_NA_POSICAO") {
-			comandoInserirNaPosicao(stream, file, listaAtual);
-		} else if (command == "MOSTRAR") {
-			comandoMostrar(listaAtual);
-		} else if (command == "REMOVER") {
-			listaAtual.retirar();
-		} else if (command == "REMOVER_MEMBRO") {
-			comandoRemoverMembro(stream, file, listaAtual);
-		} else if (command == "REMOVER_DA_POSICAO") {
-			comandoRemoverDaPosicao(stream, file, listaAtual);
-		}
+        if (command == "CRIAR") {
+            listaAtual.limpar();
+        } else if (command == "INSERIR") {
+            comandoInserir(stream, file, listaAtual);
+        } else if (command == "INSERIR_EM_ORDEM") {
+            comandoInserirEmOrdem(stream, file, listaAtual);
+        } else if (command == "INSERIR_NA_POSICAO") {
+            comandoInserirNaPosicao(stream, file, listaAtual);
+        } else if (command == "MOSTRAR") {
+            comandoMostrar(listaAtual);
+        } else if (command == "REMOVER") {
+            listaAtual.retirar();
+        } else if (command == "REMOVER_MEMBRO") {
+            comandoRemoverMembro(stream, file, listaAtual);
+        } else if (command == "REMOVER_DA_POSICAO") {
+            comandoRemoverDaPosicao(stream, file, listaAtual);
+        }
 
-	}
+    }
 }
 
 int main(int argc, char** argv) {
 
-	if (argc < 2) {
-		execucaoInterativa();
-	} else {
-		execucaoDeTestes(argv[1]);
-	}
+    if (argc < 2) {
+        execucaoInterativa();
+    } else {
+        execucaoDeTestes(argv[1]);
+    }
 
 }
 
